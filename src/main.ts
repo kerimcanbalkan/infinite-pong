@@ -78,7 +78,7 @@ k.onUpdate("ball", (ball) => {
   }
 
   boxes.forEach(box => {
-    if (Math.abs(box.pos.x - ball.pos.x) < boxWidth * 3 && Math.abs(box.pos.y - box.pos.y) < boxHeight * 3) {
+    if (Math.abs(box.pos.x - ball.pos.x) < boxWidth * 4 && Math.abs(box.pos.y - box.pos.y) < boxHeight * 4) {
       if (!box.area) {
         box.use(k.area());
       }
