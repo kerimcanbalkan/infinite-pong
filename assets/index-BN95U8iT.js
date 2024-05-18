@@ -3916,9 +3916,7 @@ var zo = i((n = {}) => {
       window[t] = Ze[t];
   return n.focus !== false && y.canvas.focus(), Ze;
 }, "default");
-const k = zo({
-  letterbox: true
-});
+const k = zo({});
 const boxWidth = k.width() / 30;
 const boxHeight = k.height() / 15;
 const numBoxesX = Math.ceil(k.width() / boxWidth / 2);
