@@ -3922,8 +3922,8 @@ const boxHeight = k.height() / 15;
 const numBoxesX = Math.ceil(k.width() / boxWidth / 2);
 const numBoxesY = Math.ceil(k.height() / boxHeight);
 const ballRadius = boxWidth / 8;
-const ballSpeedH = 200;
-const ballSpeedV = 100;
+const ballSpeedH = k.width() / 10;
+const ballSpeedV = k.width() / 20;
 const primaryColor = k.Color.fromArray([169, 4, 50]);
 const secondaryColor = k.Color.fromArray([253, 185, 34]);
 const boxes = [];
@@ -3988,7 +3988,7 @@ k.onUpdate("ball", (ball) => {
     ball.vspeed = -ball.vspeed;
   }
   boxes.forEach((box) => {
-    if (Math.abs(box.pos.x - ball.pos.x) < boxWidth * 3 && Math.abs(box.pos.y - box.pos.y) < boxHeight * 3) {
+    if (Math.abs(box.pos.x - ball.pos.x) < boxWidth * 4 && Math.abs(box.pos.y - box.pos.y) < boxHeight * 4) {
       if (!box.area) {
         box.use(k.area());
       }
