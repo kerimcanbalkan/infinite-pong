@@ -1,100 +1,111 @@
-const boxWidth = 40;
-const boxHeight = 40;
-const numBoxesX = Math.ceil(width() / boxWidth / 2);
-const numBoxesY = Math.ceil(height() / boxHeight);
+import { numBoxesY, numBoxesX, boxHeight, boxWidth, secondaryColor, primaryColor, ballRadius, ballSpeedH, ballSpeedV } from "./constants";
+import { k } from "./kaboomCtx";
+import { Box } from "./types";
+
+const boxes: Box[] = []
 
 
-
-for (let y = 0; y < numBoxesY; y++) {
-  for (let x = 0; x < numBoxesX; x++) {
-    add([
-      rect(40, 40),
-      color(153, 229, 80),
-      pos(x * boxWidth, y * boxHeight),
-      area(),
+for (let i = 0; i < numBoxesY; i++) {
+  for (let j = 0; j < numBoxesX; j++) {
+    // yellow
+    const box1 = k.add([
+      k.rect(boxWidth, boxHeight),
+      k.pos(i * boxWidth, j * boxHeight),
+      k.color(secondaryColor),
       "box",
       {
-        group: "green"
+        group: "primary"
+      }
+
+    ]
+    )
+    boxes.push(box1);
+    // red
+    const box2 = k.add([
+      k.rect(boxWidth, boxHeight),
+      k.color(primaryColor),
+      k.pos((i + numBoxesX) * boxWidth, j * boxHeight),
+      "box",
+      {
+        group: "secondary"
       }
 
     ]);
-  }
-}
-
-for (let y = 0; y < numBoxesY; y++) {
-  for (let x = 0; x < numBoxesX; x++) {
-    add([
-      rect(40, 40),
-      color(91, 110, 225),
-      area(),
-      pos((x + numBoxesX) * boxWidth, y * boxHeight),
-      "box",
-      {
-        group: "purple"
-      }
-
-    ]);
+    boxes.push(box2);
   }
 }
 
 
 
-add([
-  pos(width() / 4, height() / 2),
-  circle(10),
-  color(91, 110, 225),
-  area(),
-  "purple-ball",
+k.add([
+  k.pos(k.width() / 4, k.height() / 2),
+  k.circle(ballRadius),
+  k.color(primaryColor),
+  k.area(),
+  k.anchor("center"),
+  "secondary-ball",
   "ball",
   {
-    hspeed: 200,
-    vspeed: 100,
+    hspeed: ballSpeedH,
+    vspeed: ballSpeedV,
   }
 ])
 
-add([
-  pos(width() - (width() / 4), height() / 2),
-  circle(10),
-  color(153, 229, 80),
-  area(),
-  "green-ball",
+k.add([
+  k.pos(k.width() - (k.width() / 4), k.height() / 2),
+  k.circle(ballRadius),
+  k.color(secondaryColor),
+  k.area(),
+  k.anchor("center"),
+  "primary-ball",
   "ball",
   {
-    hspeed: -200,
-    vspeed: -100,
+    hspeed: -ballSpeedH,
+    vspeed: -ballSpeedV,
   }
 
 ])
 
 
-onUpdate("ball", (ball) => {
-  if (ball.pos.x < 0 || ball.pos.x > width()) {
+k.onUpdate("ball", (ball) => {
+  ball.move(ball.hspeed, ball.vspeed);
+
+  if (ball.pos.x - ballRadius * 2 <= 0 || ball.pos.x >= k.width() - ballRadius * 2) {
     ball.hspeed = -ball.hspeed;
   }
-  if (ball.pos.y < 0 || ball.pos.y > height()) {
+  if (ball.pos.y - ballRadius * 2 <= 0 || ball.pos.y >= k.height() - ballRadius * 2) {
     ball.vspeed = -ball.vspeed;
   }
-  // move
-  ball.move(ball.hspeed, ball.vspeed);
+
+  boxes.forEach(box => {
+    if (Math.abs(box.pos.x - ball.pos.x) < boxWidth * 3 && Math.abs(box.pos.y - box.pos.y) < boxHeight * 3) {
+      if (!box.area) {
+        box.use(k.area());
+      }
+    } else {
+      box.unuse("area");
+    }
+  })
+
 });
 
 
-onCollideUpdate("green-ball", "box", (ball, box) => {
-  if (box.group === "green") {
+k.onCollide("primary-ball", "box", (ball, box) => {
+  if (box.group === "primary") {
     ball.hspeed = -ball.hspeed;
     ball.vspeed = -ball.hspeed;
-    box.color = Color.fromArray([91, 110, 225]);
-    box.group = "purple"
+    box.color = primaryColor;
+    box.group = "secondary"
   }
 
 })
 
-onCollide("purple-ball", "box", (ball, box) => {
-  if (box.group === "purple") {
+k.onCollide("secondary-ball", "box", (ball, box) => {
+  if (box.group === "secondary") {
     ball.hspeed = -ball.hspeed;
     ball.vspeed = -ball.hspeed;
-    box.color = Color.fromArray([153, 229, 80]);
-    box.group = "green"
+    box.color = secondaryColor;
+    box.group = "primary"
   }
 })
 
