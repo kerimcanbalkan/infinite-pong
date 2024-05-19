@@ -3921,42 +3921,43 @@ const boxWidth = k.width() / 30;
 const boxHeight = k.height() / 15;
 const numBoxesX = Math.ceil(k.width() / boxWidth / 2);
 const numBoxesY = Math.ceil(k.height() / boxHeight);
-const ballRadius = boxWidth / 8;
-const ballSpeedH = k.width() / 10;
-const ballSpeedV = k.width() / 20;
-const primaryColor = k.Color.fromArray([169, 4, 50]);
-const secondaryColor = k.Color.fromArray([253, 185, 34]);
-const boxes = [];
+const ballRadius = boxWidth / 6;
+const ballSpeedH = ballRadius * 40;
+const ballSpeedV = ballRadius * 20;
+const secondaryColor = k.Color.fromArray([169, 4, 50]);
+const primaryColor = k.Color.fromArray([253, 185, 34]);
+const primaryBoxes = [];
+const secondaryBoxes = [];
 for (let i2 = 0; i2 < numBoxesY; i2++) {
   for (let j = 0; j < numBoxesX; j++) {
     const box1 = k.add(
       [
         k.rect(boxWidth, boxHeight),
-        k.pos(i2 * boxWidth, j * boxHeight),
-        k.color(secondaryColor),
+        k.pos(j * boxWidth, i2 * boxHeight),
+        k.color(primaryColor),
         "box",
         {
           group: "primary"
         }
       ]
     );
-    boxes.push(box1);
+    primaryBoxes.push(box1);
     const box2 = k.add([
       k.rect(boxWidth, boxHeight),
-      k.color(primaryColor),
-      k.pos((i2 + numBoxesX) * boxWidth, j * boxHeight),
+      k.color(secondaryColor),
+      k.pos((j + numBoxesX) * boxWidth, i2 * boxHeight),
       "box",
       {
         group: "secondary"
       }
     ]);
-    boxes.push(box2);
+    secondaryBoxes.push(box2);
   }
 }
 k.add([
   k.pos(k.width() / 4, k.height() / 2),
   k.circle(ballRadius),
-  k.color(primaryColor),
+  k.color(secondaryColor),
   k.area(),
   k.anchor("center"),
   "secondary-ball",
@@ -3969,7 +3970,7 @@ k.add([
 k.add([
   k.pos(k.width() - k.width() / 4, k.height() / 2),
   k.circle(ballRadius),
-  k.color(secondaryColor),
+  k.color(primaryColor),
   k.area(),
   k.anchor("center"),
   "primary-ball",
@@ -3987,8 +3988,21 @@ k.onUpdate("ball", (ball) => {
   if (ball.pos.y - ballRadius * 2 <= 0 || ball.pos.y >= k.height() - ballRadius * 2) {
     ball.vspeed = -ball.vspeed;
   }
-  boxes.forEach((box) => {
-    if (Math.abs(box.pos.x - ball.pos.x) < boxWidth * 4 && Math.abs(box.pos.y - box.pos.y) < boxHeight * 4) {
+});
+k.onUpdate("secondary-ball", (ball) => {
+  secondaryBoxes.forEach((box) => {
+    if (Math.abs(box.pos.x - ball.pos.x) < boxWidth * 2 && Math.abs(box.pos.y - box.pos.y) < boxHeight * 2) {
+      if (!box.area) {
+        box.use(k.area());
+      }
+    } else {
+      box.unuse("area");
+    }
+  });
+});
+k.onUpdate("primary-ball", (ball) => {
+  primaryBoxes.forEach((box) => {
+    if (Math.abs(box.pos.x - ball.pos.x) < boxWidth * 2 && Math.abs(box.pos.y - box.pos.y) < boxHeight * 2) {
       if (!box.area) {
         box.use(k.area());
       }
@@ -4001,15 +4015,21 @@ k.onCollide("primary-ball", "box", (ball, box) => {
   if (box.group === "primary") {
     ball.hspeed = -ball.hspeed;
     ball.vspeed = -ball.hspeed;
-    box.color = primaryColor;
+    box.color = secondaryColor;
     box.group = "secondary";
+    const index = primaryBoxes.indexOf(box);
+    primaryBoxes.splice(index, 1);
+    secondaryBoxes.push(box);
   }
 });
 k.onCollide("secondary-ball", "box", (ball, box) => {
   if (box.group === "secondary") {
     ball.hspeed = -ball.hspeed;
     ball.vspeed = -ball.hspeed;
-    box.color = secondaryColor;
+    box.color = primaryColor;
     box.group = "primary";
+    const index = secondaryBoxes.indexOf(box);
+    secondaryBoxes.splice(index, 1);
+    primaryBoxes.push(box);
   }
 });
