@@ -70,10 +70,10 @@ k.add([
 k.onUpdate("ball", (ball) => {
   ball.move(ball.hspeed, ball.vspeed);
 
-  if (ball.pos.x - ballRadius * 2 <= 0 || ball.pos.x >= k.width() - ballRadius * 2) {
+  if (ball.pos.x - ballRadius * 4 <= 0 || ball.pos.x >= k.width() - ballRadius * 4) {
     ball.hspeed = -ball.hspeed;
   }
-  if (ball.pos.y - ballRadius * 2 <= 0 || ball.pos.y >= k.height() - ballRadius * 2) {
+  if (ball.pos.y - ballRadius * 4 <= 0 || ball.pos.y >= k.height() - ballRadius * 4) {
     ball.vspeed = -ball.vspeed;
   }
 
