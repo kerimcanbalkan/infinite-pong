@@ -1,17 +1,17 @@
+import { GameObj } from "kaboom";
 import { numBoxesY, numBoxesX, boxHeight, boxWidth, secondaryColor, primaryColor, ballRadius, ballSpeedH, ballSpeedV } from "./constants";
 import { k } from "./kaboomCtx";
-import { Box } from "./types";
 
-const boxes: Box[] = []
-
+const primaryBoxes: GameObj[] = [];
+const secondaryBoxes: GameObj[] = [];
 
 for (let i = 0; i < numBoxesY; i++) {
   for (let j = 0; j < numBoxesX; j++) {
     // yellow
     const box1 = k.add([
       k.rect(boxWidth, boxHeight),
-      k.pos(i * boxWidth, j * boxHeight),
-      k.color(secondaryColor),
+      k.pos(j * boxWidth, i * boxHeight),
+      k.color(primaryColor),
       "box",
       {
         group: "primary"
@@ -19,19 +19,19 @@ for (let i = 0; i < numBoxesY; i++) {
 
     ]
     )
-    boxes.push(box1);
+    primaryBoxes.push(box1);
     // red
     const box2 = k.add([
       k.rect(boxWidth, boxHeight),
-      k.color(primaryColor),
-      k.pos((i + numBoxesX) * boxWidth, j * boxHeight),
+      k.color(secondaryColor),
+      k.pos((j + numBoxesX) * boxWidth, i * boxHeight),
       "box",
       {
         group: "secondary"
       }
 
     ]);
-    boxes.push(box2);
+    secondaryBoxes.push(box2);
   }
 }
 
@@ -40,7 +40,7 @@ for (let i = 0; i < numBoxesY; i++) {
 k.add([
   k.pos(k.width() / 4, k.height() / 2),
   k.circle(ballRadius),
-  k.color(primaryColor),
+  k.color(secondaryColor),
   k.area(),
   k.anchor("center"),
   "secondary-ball",
@@ -54,7 +54,7 @@ k.add([
 k.add([
   k.pos(k.width() - (k.width() / 4), k.height() / 2),
   k.circle(ballRadius),
-  k.color(secondaryColor),
+  k.color(primaryColor),
   k.area(),
   k.anchor("center"),
   "primary-ball",
@@ -77,8 +77,11 @@ k.onUpdate("ball", (ball) => {
     ball.vspeed = -ball.vspeed;
   }
 
-  boxes.forEach(box => {
-    if (Math.abs(box.pos.x - ball.pos.x) < boxWidth * 4 && Math.abs(box.pos.y - box.pos.y) < boxHeight * 4) {
+});
+
+k.onUpdate("secondary-ball", (ball) => {
+  secondaryBoxes.forEach(box => {
+    if (Math.abs(box.pos.x - ball.pos.x) < boxWidth * 2 && Math.abs(box.pos.y - box.pos.y) < boxHeight * 2) {
       if (!box.area) {
         box.use(k.area());
       }
@@ -87,25 +90,49 @@ k.onUpdate("ball", (ball) => {
     }
   })
 
-});
+})
+
+k.onUpdate("primary-ball", (ball) => {
+  primaryBoxes.forEach(box => {
+    if (Math.abs(box.pos.x - ball.pos.x) < boxWidth * 2 && Math.abs(box.pos.y - box.pos.y) < boxHeight * 2) {
+      if (!box.area) {
+        box.use(k.area());
+      }
+    } else {
+      box.unuse("area");
+    }
+
+  })
+
+})
 
 
-k.onCollide("primary-ball", "box", (ball, box) => {
+k.onCollide("primary-ball", "box", (ball, box: GameObj) => {
   if (box.group === "primary") {
     ball.hspeed = -ball.hspeed;
     ball.vspeed = -ball.hspeed;
-    box.color = primaryColor;
+    box.color = secondaryColor;
     box.group = "secondary"
+
+    const index = primaryBoxes.indexOf(box);
+    primaryBoxes.splice(index, 1);
+
+    secondaryBoxes.push(box);
   }
 
 })
 
-k.onCollide("secondary-ball", "box", (ball, box) => {
+k.onCollide("secondary-ball", "box", (ball, box: GameObj) => {
   if (box.group === "secondary") {
     ball.hspeed = -ball.hspeed;
     ball.vspeed = -ball.hspeed;
-    box.color = secondaryColor;
+    box.color = primaryColor;
     box.group = "primary"
+
+    const index = secondaryBoxes.indexOf(box);
+    secondaryBoxes.splice(index, 1);
+
+    primaryBoxes.push(box);
   }
 })
 
